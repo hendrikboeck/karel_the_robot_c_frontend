@@ -1,0 +1,2 @@
+# karel_the_robot_c_frontend
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/94c456835eda404ebf64a4df610036f0)](https://app.codacy.com/gh/hendrikboeck/karel_the_robot_c_frontend?utm_source=github.com&utm_medium=referral&utm_content=hendrikboeck/karel_the_robot_c_frontend&utm_campaign=Badge_Grade_Settings)
