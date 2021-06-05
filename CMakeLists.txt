@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.6)
 project(karel_cfe VERSION 0.1)
 
-set(TARGET_NAME ${PROJECT_NAME}-v${PROJECT_VERSION}-SNAPSHOT)
+set(TARGET_NAME ${PROJECT_NAME})
 set(CMAKE_C_STANDARD 11)
 
 include(ExternalProject)
