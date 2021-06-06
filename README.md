@@ -21,16 +21,33 @@ This is a frontend for the "Karel The Robot - Universal Backend" project.
 If you want to create a C-project based on the CMake build system you can use the integrated `ExternalProject_Add` function of CMake. Donwload [`karel.h`](karel.h) to your folder with your header-files. Just add the following lines to your `CMakeLists.txt`.
 
 ```cmake
+cmake_minimum_required(VERSION 3.6)
+
+project(<projectname> LANGUAGES C VERSION 0.1)
+set(CMAKE_C_STANDARD 11)
+set(CMAKE_BUILD_TYPE_INIT "Release")
+
 include(ExternalProject)
-ExternalProject_Add(simplejson
+ExternalProject_Add(
+  karel
+  
   GIT_REPOSITORY  https://github.com/hendrikboeck/karel_the_robot_c_frontend.git
   GIT_TAG         stable
+
   INSTALL_COMMAND ""
+
+  CMAKE_ARGS
+    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
 )
-set(EXTERNAL_INSTALL_LOCATION ${CMAKE_BINARY_DIR}/external)
+ExternalProject_Get_Property(karel install_dir)
 
-find_library(karel_cfe ${EXTERNAL_INSTALL_LOCATION})
+find_library(karel ${install_dir})
 
-add_dependencies(<target> karel_cfe)
-target_link_libraries(<target> libkarel_cfe)
+include_directories(
+  <path to folder with .h-files>
+)
+
+add_executable(<targetname> <src-files>)
+add_dependencies(<targetname> karel)
+target_link_libraries(<targetname> libkarel)
 ```
