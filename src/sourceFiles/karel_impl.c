@@ -18,17 +18,35 @@
 
 #include "karel_impl.h"
 
-Object __executeCommand(strview_t commandName, Dict args) {
-  int64_t id     = pipe_send(commandName, args);
-  Object  result = pipe_receive(id);
+void __startPBEProcess() {
+#ifdef _WIN32
+  system(".\\PBE_PKG\\run_karel_pbe.bat");
+#else
+  system("PBE_PKG/run_karel_pbe.sh");
+#endif
+}
 
-  if (object_isStr(result)) __errorExit(EXIT_FAILURE, object_getStr(result));
+Object __executeCommand(strview_t commandName, Dict args) {
+  int64_t id     = pipeSend(commandName, args);
+  Object  result = pipeReceive(id);
+
+  if (object_isStr(result)) {
+    StringBuffer sbuf = stringbuffer_new();
+    stringbuffer_put(sbuf, "PBE-Error: ");
+    stringbuffer_put(sbuf, object_getStr(result));
+    if (str_equal(object_getStr(result), "ActionExecutionError"))
+      stringbuffer_put(
+          sbuf,
+          ", for further information evaluate the ErrorWindow in the PBE.");
+    __errorExit(EXIT_FAILURE, stringbuffer_get(sbuf));
+  }
 
   return result;
 }
 
 void loadWorld(strview_t name) {
-  pipe_init();
+  __startPBEProcess();
+  pipeInit();
 
   Dict args = dict_new();
   dict_set(args, "map", object_new(str_copy(name)));

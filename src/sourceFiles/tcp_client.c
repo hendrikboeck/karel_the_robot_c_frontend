@@ -18,8 +18,8 @@
 
 #include "tcp_client.h"
 
-TcpClient tcpclient_new() {
-  TcpClient self = PNEW(TcpClient);
+TCPClient tcpclient_new() {
+  TCPClient self = PNEW(TCPClient);
 
   memset(&self->server, 0, sizeof(self->server));
   self->sock = -1;
@@ -27,21 +27,21 @@ TcpClient tcpclient_new() {
   return self;
 }
 
-void tcpclient_del(TcpClient self) {
+void tcpclient_del(TCPClient self) {
   tcpclient_close(self);
   DEL(self->buf);
   DEL(self);
 }
 
-void tcpclient_connect(TcpClient self) {
+void tcpclient_connect(TCPClient self) {
   // create socket
 #ifdef _WIN32
   self->wVersionRequested = MAKEWORD(1, 1);
   if (WSAStartup(self->wVersionRequested, &self->wsaData) != 0)
-    __errorExit(1, "could not initialize winsock");
+    FATAL_ERROR("tcpclient_connect: could not initialize winsock");
 #endif  // _WIN32
   self->sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-  if (self->sock < 0) __errorExit(1, "could not create socket");
+  if (self->sock < 0) FATAL_ERROR("tcpclient_connect: could not create socket");
 
   // configure connection
   uint64_t addr = inet_addr(globals.serverAddr);
@@ -53,10 +53,11 @@ void tcpclient_connect(TcpClient self) {
   int32_t status = connect(self->sock, (struct sockaddr*)&self->server,
                            sizeof(self->server));
   if (status < 0)
-    __errorExit(1, "no connection to server could be established.");
+    FATAL_ERROR(
+        "tcpclient_connect: no connection to server could be established.");
 }
 
-void tcpclient_close(TcpClient self) {
+void tcpclient_close(TCPClient self) {
 #ifdef _WIN32
   closesocket(self->sock);
   WSACleanup();
@@ -65,13 +66,14 @@ void tcpclient_close(TcpClient self) {
 #endif
 }
 
-void tcpclient_send(TcpClient self, strview_t data) {
+void tcpclient_send(TCPClient self, strview_t data) {
   send(self->sock, data, strlen(data), 0);
 }
 
-strview_t tcpclient_receive(TcpClient self) {
+strview_t tcpclient_receive(TCPClient self) {
   int32_t receivedSize = recv(self->sock, self->buf, TCP_MAX_PKG_SIZE, 0);
-  if (receivedSize < 0) __errorExit(1, "error on recv()");
+  if (receivedSize < 0)
+    FATAL_ERROR("tcpclient_send: error on recv(), receivedSize < 0");
 
   self->buf[receivedSize] = 0;
   return self->buf;

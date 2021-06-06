@@ -19,9 +19,12 @@
 #ifndef _KAREL_KAREL_IMPL_H
 #define _KAREL_KAREL_IMPL_H
 
+#include <stdlib.h>
+
 #include "pipe.h"
 #include "simplejson/_internal.h"
 
+void __startPBEProcess();
 Object __executeCommand(strview_t commandName, Dict args);
 
 void loadWorld(strview_t name);

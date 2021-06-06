@@ -52,7 +52,7 @@ typedef SOCKET sock_t;
 typedef int32_t sock_t;
 #endif
 
-struct _TcpClient {
+struct _TCPClient {
 #ifdef _WIN32
   WORD    wVersionRequested;
   WSADATA wsaData;
@@ -61,18 +61,29 @@ struct _TcpClient {
   sock_t             sock;
   byte_t*            buf;
 };
-typedef struct _TcpClient* TcpClient;
+typedef struct _TCPClient* TCPClient;
 
-TcpClient tcpclient_new();
-void      tcpclient_del(TcpClient self);
+TCPClient tcpclient_new();
+void      tcpclient_del(TCPClient self);
 
-void      tcpclient_connect(TcpClient self);
-void      tcpclient_close(TcpClient self);
-void      tcpclient_send(TcpClient self, strview_t data);
-strview_t tcpclient_receive(TcpClient self);
+void      tcpclient_connect(TCPClient self);
+void      tcpclient_close(TCPClient self);
+void      tcpclient_send(TCPClient self, strview_t data);
+strview_t tcpclient_receive(TCPClient self);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif  // _KAREL_TCP_CLIENT_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+struct _TCPClient;
+typedef struct _TCPClient* TCPClient;
+
+#ifdef __cplusplus
+}
+#endif

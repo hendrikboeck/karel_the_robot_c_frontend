@@ -24,20 +24,20 @@ extern "C" {
 #endif
 
 #include "simplejson/_internal.h"
+#include "tcp_client.h"
 
 #define DEFAULT_SERVER_ADDR "127.0.0.1"
 #define DEFAULT_SERVER_PORT 14480
 
-struct _TcpClient;
-
-struct __GTypeWrapper {
-  str_t              serverAddr;
-  int32_t            serverPort;
-  struct _TcpClient* client;
-  int64_t            id;
+struct _GTypeWrapper {
+  str_t     serverAddr;
+  int32_t   serverPort;
+  TCPClient client;
+  int64_t   id;
 };
+typedef struct _GTypeWrapper GTypeWrapper;
 
-extern struct __GTypeWrapper globals;
+extern GTypeWrapper globals;
 
 #ifdef __cplusplus
 }

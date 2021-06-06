@@ -1,3 +1,4 @@
-build
+build*
 .vscode
 src/headerFiles/simplejson
+PBE_PKG

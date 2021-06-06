@@ -18,5 +18,4 @@
 
 #include "globals.h"
 
-struct __GTypeWrapper globals =
-    (struct __GTypeWrapper){DEFAULT_SERVER_ADDR, DEFAULT_SERVER_PORT, NULL, 0};
+GTypeWrapper globals = {DEFAULT_SERVER_ADDR, DEFAULT_SERVER_PORT, NULL, 0};

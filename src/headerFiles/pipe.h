@@ -28,11 +28,11 @@ extern "C" {
 #include "simplejson/jsonwriter.h"
 #include "tcp_client.h"
 
-void pipe_init();
-void pipe_close();
+void pipeInit();
+void pipeClose();
 
-Object  pipe_receive(int64_t id);
-int64_t pipe_send(strview_t commandName, Dict args);
+Object  pipeReceive(int64_t id);
+int64_t pipeSend(strview_t commandName, Dict args);
 
 #ifdef __cplusplus
 }
