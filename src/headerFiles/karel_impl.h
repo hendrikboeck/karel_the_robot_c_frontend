@@ -19,13 +19,17 @@
 #ifndef _KAREL_KAREL_IMPL_H
 #define _KAREL_KAREL_IMPL_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdlib.h>
 
 #include "pipe.h"
 #include "simplejson/_internal.h"
 
-void __startPBEProcess();
-Object __executeCommand(strview_t commandName, Dict args);
+void   startPBEProcess();
+Object executeCommand(strview_t commandName, Dict args);
 
 void loadWorld(strview_t name);
 
@@ -52,5 +56,9 @@ int32_t facingSouth();
 int32_t notFacingSouth();
 int32_t facingWest();
 int32_t notFacingWest();
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif  // _KAREL_KAREL_IMPL_H

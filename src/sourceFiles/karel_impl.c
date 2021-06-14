@@ -18,15 +18,16 @@
 
 #include "karel_impl.h"
 
-void __startPBEProcess() {
+void startPBEProcess() {
 #ifdef _WIN32
   system(".\\PBE_PKG\\run_karel_pbe.bat");
 #else
-  system("PBE_PKG/run_karel_pbe.sh");
+  system("./PBE_PKG/run_karel_pbe.sh");
+  sleep(1);
 #endif
 }
 
-Object __executeCommand(strview_t commandName, Dict args) {
+Object executeCommand(strview_t commandName, Dict args) {
   int64_t id     = pipeSend(commandName, args);
   Object  result = pipeReceive(id);
 
@@ -38,39 +39,39 @@ Object __executeCommand(strview_t commandName, Dict args) {
       stringbuffer_put(
           sbuf,
           ", for further information evaluate the ErrorWindow in the PBE.");
-    __errorExit(EXIT_FAILURE, stringbuffer_get(sbuf));
+    sys_errorExit(EXIT_FAILURE, stringbuffer_get(sbuf));
   }
 
   return result;
 }
 
 void loadWorld(strview_t name) {
-  __startPBEProcess();
+  startPBEProcess();
   pipeInit();
 
   Dict args = dict_new();
-  dict_set(args, "map", object_new(str_copy(name)));
-  object_del(__executeCommand("loadWorld", args));
+  dict_set(args, str_copy("map"), object_new(str_copy(name)));
+  object_del(executeCommand("loadWorld", args));
 }
 
 void move() {
-  object_del(__executeCommand("move", NULL));
+  object_del(executeCommand("move", NULL));
 }
 
 void turnLeft() {
-  object_del(__executeCommand("turnLeft", NULL));
+  object_del(executeCommand("turnLeft", NULL));
 }
 
 void pickBeeper() {
-  object_del(__executeCommand("pickBeeper", NULL));
+  object_del(executeCommand("pickBeeper", NULL));
 }
 
 void putBeeper() {
-  object_del(__executeCommand("putBeeper", NULL));
+  object_del(executeCommand("putBeeper", NULL));
 }
 
 int32_t frontIsClear() {
-  Object  obj    = __executeCommand("frontIsClear", NULL);
+  Object  obj    = executeCommand("frontIsClear", NULL);
   int32_t result = (int32_t)object_getBool(obj);
 
   object_del(obj);
@@ -82,7 +83,7 @@ int32_t frontIsBlocked() {
 }
 
 int32_t rightIsClear() {
-  Object  obj    = __executeCommand("rightIsClear", NULL);
+  Object  obj    = executeCommand("rightIsClear", NULL);
   int32_t result = (int32_t)object_getBool(obj);
 
   object_del(obj);
@@ -94,7 +95,7 @@ int32_t rightIsBlocked() {
 }
 
 int32_t leftIsClear() {
-  Object  obj    = __executeCommand("leftIsClear", NULL);
+  Object  obj    = executeCommand("leftIsClear", NULL);
   int32_t result = (int32_t)object_getBool(obj);
 
   object_del(obj);
@@ -106,7 +107,7 @@ int32_t leftIsBlocked() {
 }
 
 int32_t beeperInBag() {
-  Object  obj    = __executeCommand("beeperInBag", NULL);
+  Object  obj    = executeCommand("beeperInBag", NULL);
   int32_t result = (int32_t)object_getBool(obj);
 
   object_del(obj);
@@ -118,7 +119,7 @@ int32_t noBeeperInBag() {
 }
 
 int32_t beeperPresent() {
-  Object  obj    = __executeCommand("beeperPresent", NULL);
+  Object  obj    = executeCommand("beeperPresent", NULL);
   int32_t result = (int32_t)object_getBool(obj);
 
   object_del(obj);
@@ -130,7 +131,7 @@ int32_t noBeeperPresent() {
 }
 
 int32_t facingNorth() {
-  Object  obj    = __executeCommand("facingNorth", NULL);
+  Object  obj    = executeCommand("facingNorth", NULL);
   int32_t result = (int32_t)object_getBool(obj);
 
   object_del(obj);
@@ -142,7 +143,7 @@ int32_t notFacingNorth() {
 }
 
 int32_t facingEast() {
-  Object  obj    = __executeCommand("facingEast", NULL);
+  Object  obj    = executeCommand("facingEast", NULL);
   int32_t result = (int32_t)object_getBool(obj);
 
   object_del(obj);
@@ -154,7 +155,7 @@ int32_t notFacingEast() {
 }
 
 int32_t facingSouth() {
-  Object  obj    = __executeCommand("facingSouth", NULL);
+  Object  obj    = executeCommand("facingSouth", NULL);
   int32_t result = (int32_t)object_getBool(obj);
 
   object_del(obj);
@@ -166,7 +167,7 @@ int32_t notFacingSouth() {
 }
 
 int32_t facingWest() {
-  Object  obj    = __executeCommand("facingWest", NULL);
+  Object  obj    = executeCommand("facingWest", NULL);
   int32_t result = (int32_t)object_getBool(obj);
 
   object_del(obj);

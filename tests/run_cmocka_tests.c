@@ -16,50 +16,41 @@
 /* along with this program.  If not, see <http://www.gnu.org/licenses/>.      */
 /******************************************************************************/
 
-#include "pipe.h"
+#include <setjmp.h>
+#include <stdarg.h>
+#include <stddef.h>
+// <cmocka.h> --- below this comment
+#include <cmocka.h>
 
-void pipeInit() {
-  globals.id     = 0;
-  globals.client = tcpclient_new();
-  tcpclient_connect(globals.client);
+#include "globals_test.c"
+#include "tcp_client_test.c"
+#include "pipe_test.c"
 
-  atexit(pipeClose);
-}
+int main(void) {
+  // test globals.h
+  printf("--------- RUNNING TESTS FOR 'globals.h' ---------\n");
+  const struct CMUnitTest tests_globals[] = {
+      cmocka_unit_test(test_globals_new)};
+  int return_tests_globals = cmocka_run_group_tests(tests_globals, NULL, NULL);
 
-void pipeClose() {
-  tcpclient_close(globals.client);
-}
+  // test tcp_client.h
+  system("./tests/tcp_echo_server &> /dev/null &");
+  sleep(1);
+  printf("\n--------- RUNNING TESTS FOR 'tcp_client.h' ---------\n");
+  const struct CMUnitTest tests_tcp_client[] = {
+      cmocka_unit_test(test_tcp_client_new),
+      cmocka_unit_test(test_tcp_client_send_recv)};
+  int return_tests_tcp_client =
+      cmocka_run_group_tests(tests_tcp_client, NULL, NULL);
 
-Object pipeReceive(int64_t id) {
-  if (globals.client == NULL) FATAL_ERROR("pipe has not been initialized yet.");
+  // test tcp_client.h
+  // system("./tests/tcp_echo_server &> /dev/null &");
+  // sleep(1);
+  printf("\n--------- RUNNING TESTS FOR 'pipe.h' ---------\n");
+  const struct CMUnitTest tests_pipe[] = {cmocka_unit_test(test_pipe_all)};
+  int return_tests_pipe = cmocka_run_group_tests(tests_pipe, NULL, NULL);
 
-  strview_t  json   = tcpclient_receive(globals.client);
-  JSONReader reader = jsonreader_new(json);
-  Dict       data   = jsonreader_getDict(reader);
-  if (object_getInt64(dict_get(data, "id")) != id)
-    FATAL_ERROR("ID's of messages did not match");
+  
 
-  Object result = object_copy(dict_get(data, "result"));
-  jsonreader_del(reader);
-
-  return result;
-}
-
-int64_t pipeSend(strview_t commandName, Dict args) {
-  if (globals.client == NULL) FATAL_ERROR("pipe has not been initialized yet.");
-
-  Dict    command = dict_new();
-  int64_t id      = globals.id++;
-  Object  oargs   = (args == NULL) ? object_new(NULL) : object_new(args);
-
-  dict_set(command, str_copy("id"), object_new((int64_t)id));
-  dict_set(command, str_copy("function"), object_new(str_copy(commandName)));
-  dict_set(command, str_copy("args"), oargs);
-
-  JSONWriter writer = jsonwriter_new(command);
-  tcpclient_send(globals.client, jsonwriter_getStrView(writer));
-
-  jsonwriter_del(writer);
-  dict_del(command);
-  return id;
+  return return_tests_globals + return_tests_tcp_client + return_tests_pipe;
 }

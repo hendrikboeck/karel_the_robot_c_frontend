@@ -27,10 +27,11 @@ TCPClient tcpclient_new() {
   return self;
 }
 
-void tcpclient_del(TCPClient self) {
+TCPClient tcpclient_del(TCPClient self) {
   tcpclient_close(self);
   DEL(self->buf);
   DEL(self);
+  return NULL;
 }
 
 void tcpclient_connect(TCPClient self) {
@@ -40,12 +41,14 @@ void tcpclient_connect(TCPClient self) {
   if (WSAStartup(self->wVersionRequested, &self->wsaData) != 0)
     FATAL_ERROR("tcpclient_connect: could not initialize winsock");
 #endif  // _WIN32
+  if (self == NULL) FATAL_ERROR("TCPClient == NULL");
+
   self->sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
   if (self->sock < 0) FATAL_ERROR("tcpclient_connect: could not create socket");
 
   // configure connection
   uint64_t addr = inet_addr(globals.serverAddr);
-  memcpy(&self->server.sin_addr, &addr, sizeof(addr));
+  memory_copyOnto(&self->server.sin_addr, &addr, sizeof(addr));
   self->server.sin_family = AF_INET;
   self->server.sin_port   = htons(globals.serverPort);
 
@@ -58,12 +61,16 @@ void tcpclient_connect(TCPClient self) {
 }
 
 void tcpclient_close(TCPClient self) {
+  if (self->sock != -1) {
 #ifdef _WIN32
-  closesocket(self->sock);
-  WSACleanup();
+    closesocket(self->sock);
+    WSACleanup();
 #else
-  close(self->sock);
+    close(self->sock);
 #endif
+    self->sock = -1;
+  }
+  if (self->sock != -1) FATAL_ERROR("could not close tcp-socket");
 }
 
 void tcpclient_send(TCPClient self, strview_t data) {

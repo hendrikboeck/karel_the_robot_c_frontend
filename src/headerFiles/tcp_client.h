@@ -43,6 +43,7 @@ extern "C" {
 
 #include "globals.h"
 #include "simplejson/_internal.h"
+#include "simplejson/str.h"
 
 #define TCP_MAX_PKG_SIZE 65535
 
@@ -64,7 +65,7 @@ struct _TCPClient {
 typedef struct _TCPClient* TCPClient;
 
 TCPClient tcpclient_new();
-void      tcpclient_del(TCPClient self);
+TCPClient tcpclient_del(TCPClient self);
 
 void      tcpclient_connect(TCPClient self);
 void      tcpclient_close(TCPClient self);

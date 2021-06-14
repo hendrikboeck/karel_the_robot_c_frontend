@@ -16,50 +16,40 @@
 /* along with this program.  If not, see <http://www.gnu.org/licenses/>.      */
 /******************************************************************************/
 
-#include "pipe.h"
+#include <setjmp.h>
+#include <stdarg.h>
+#include <stddef.h>
+// <cmocka.h> --- below this comment
+#include <cmocka.h>
 
-void pipeInit() {
-  globals.id     = 0;
-  globals.client = tcpclient_new();
-  tcpclient_connect(globals.client);
+#include "tcp_client.h"
 
-  atexit(pipeClose);
+static void test_tcp_client_new(void** state) {
+  (void)state;
+
+  TCPClient c_01 = tcpclient_new();
+
+  assert_non_null(c_01);
+  assert_non_null(c_01->buf);
+  assert_int_equal(c_01->sock, -1);
+
+  c_01 = tcpclient_del(c_01);
+  assert_null(c_01);
 }
 
-void pipeClose() {
-  tcpclient_close(globals.client);
-}
+static void test_tcp_client_send_recv(void** state) {
+  (void)state;
 
-Object pipeReceive(int64_t id) {
-  if (globals.client == NULL) FATAL_ERROR("pipe has not been initialized yet.");
+  TCPClient c_01 = tcpclient_new();
+  tcpclient_connect(c_01);
 
-  strview_t  json   = tcpclient_receive(globals.client);
-  JSONReader reader = jsonreader_new(json);
-  Dict       data   = jsonreader_getDict(reader);
-  if (object_getInt64(dict_get(data, "id")) != id)
-    FATAL_ERROR("ID's of messages did not match");
+  for (int i = 0; i < 1000; i++) {
+    tcpclient_send(c_01, "Hello World!");
+    strview_t data = tcpclient_receive(c_01);
+    assert_string_equal(data, "Hello World!");
+  }
 
-  Object result = object_copy(dict_get(data, "result"));
-  jsonreader_del(reader);
-
-  return result;
-}
-
-int64_t pipeSend(strview_t commandName, Dict args) {
-  if (globals.client == NULL) FATAL_ERROR("pipe has not been initialized yet.");
-
-  Dict    command = dict_new();
-  int64_t id      = globals.id++;
-  Object  oargs   = (args == NULL) ? object_new(NULL) : object_new(args);
-
-  dict_set(command, str_copy("id"), object_new((int64_t)id));
-  dict_set(command, str_copy("function"), object_new(str_copy(commandName)));
-  dict_set(command, str_copy("args"), oargs);
-
-  JSONWriter writer = jsonwriter_new(command);
-  tcpclient_send(globals.client, jsonwriter_getStrView(writer));
-
-  jsonwriter_del(writer);
-  dict_del(command);
-  return id;
+  tcpclient_close(c_01);
+  c_01 = tcpclient_del(c_01);
+  assert_null(c_01);
 }

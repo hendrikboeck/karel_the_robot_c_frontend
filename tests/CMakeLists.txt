@@ -16,37 +16,44 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.        #
 ################################################################################
 
-## You do not have to change version
 cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
+project(karel_test VERSION 1.0 LANGUAGES C)
 
-## Change helloworld to your desired project-name
-project(helloworld VERSION 1.0 LANGUAGES C)
-
-## Specify where all your .h-files are
-set(INCLUDE_DIRECTORIES .)
-
-## Add all src (*.c) files you want to compile after ALL_SRCS
-set(SRC_FILES helloworld.c)
-
-################################################################################
-##                         !! DO NOT EDIT BELOW !!                            ##
-################################################################################
-set(CMAKE_C_STANDARD 99)
-set(C_STANDARD_REQUIRED 99)
-set(CMAKE_BUILD_TYPE_INIT "Release")
-set(TARGETNAME ${PROJECT_NAME})
-
-file(COPY ${PROJECT_SOURCE_DIR}/PBE_PKG DESTINATION ${CMAKE_BINARY_DIR})
-
-include_directories(
-  ${INCLUDE_DIRECTORIES}
+# DOWNLOAD CMOCKA AND MAKE AVAILABLE
+#
+include(FetchContent)
+FetchContent_Declare(
+  cmocka
+  GIT_REPOSITORY https://git.cryptomilk.org/projects/cmocka.git
+  GIT_TAG        cmocka-1.1.5
+  GIT_SHALLOW    1
 )
-file(GLOB ALL_SRCS ${SRC_FILES})
 
-add_executable(${TARGETNAME} ${ALL_SRCS})
-target_compile_features(${TARGETNAME} PRIVATE c_std_99)
-target_link_libraries(${TARGETNAME} 
-  ${PROJECT_SOURCE_DIR}/lib/libkarel.a
-  ${PROJECT_SOURCE_DIR}/lib/libsimplejson.a
-  ws2_32
-)
+set(WITH_STATIC_LIB ON CACHE BOOL "CMocka: Build with a static library" FORCE)
+set(WITH_CMOCKERY_SUPPORT OFF CACHE BOOL "CMocka: Install a cmockery header" FORCE)
+set(WITH_EXAMPLES OFF CACHE BOOL "CMocka: Build examples" FORCE)
+set(UNIT_TESTING OFF CACHE BOOL "CMocka: Build with unit testing" FORCE)
+set(PICKY_DEVELOPER OFF CACHE BOOL "CMocka: Build with picky developer flags" FORCE)
+
+FetchContent_MakeAvailable(cmocka)
+
+# BUILD TEST EXE
+#
+include_directories(.)
+add_executable(karel_test run_cmocka_tests.c)
+add_dependencies(karel_test cmocka)
+target_compile_features(karel_test PRIVATE c_std_11)
+target_link_libraries(karel_test PRIVATE cmocka-static karel simplejson)
+if (WIN32)
+target_link_libraries(karel_test PRIVATE ws2_32)
+endif()
+
+add_executable(tcp_echo_server tcp_echo_server.c)
+if (WIN32)
+target_link_libraries(tcp_echo_server PRIVATE ws2_32)
+endif()
+
+# ADD TO TESTS
+#
+enable_testing()
+add_test(NAME karel_test COMMAND karel_test)
